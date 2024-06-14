@@ -70,12 +70,18 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
 
     // b1 cai thu vien
+    // room
     implementation("androidx.room:room-runtime:2.6.1")
     annotationProcessor("androidx.room:room-compiler:2.6.1")
     kapt("androidx.room:room-compiler:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
+
+    // nav
     implementation("androidx.navigation:navigation-compose:2.7.7")
 
     // tim kiem k dau
     implementation("com.ibm.icu:icu4j:69.1")
+
+    // load anh
+    implementation("io.coil-kt:coil-compose:2.6.0")
 }

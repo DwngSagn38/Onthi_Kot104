@@ -10,5 +10,6 @@ data class SanPhamModel(
     @ColumnInfo(name = "name") var name : String?,
     @ColumnInfo(name = "price") var price : Double?,
     @ColumnInfo(name = "description") var description : String?,
-    @ColumnInfo(name = "status") var status : Boolean?
+    @ColumnInfo(name = "status") var status : Boolean?,
+    @ColumnInfo(name = "image") var image : String?,
 )

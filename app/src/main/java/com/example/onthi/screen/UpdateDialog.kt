@@ -26,33 +26,39 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.onthi.room.SanPhamModel
 import com.example.onthi.viewmodel.SanPhamViewModel
 
-
-// add san pham
 @Composable
-fun AddSanPham(
+fun UpdateSanPham(
     viewModel: SanPhamViewModel,
     context: Context,
+    sp : SanPhamModel,
     onConfirm: () -> Unit) {
+
+    var uid by remember {
+        mutableStateOf( sp.uid )
+    }
+
     var inputName by remember {
-        mutableStateOf("")
+        mutableStateOf( sp.name )
     }
 
     var inputPrice by remember {
-        mutableStateOf("")
+        mutableStateOf(sp.price.toString() )
     }
 
     var inputDescription by remember {
-        mutableStateOf("")
+        mutableStateOf(sp.description)
     }
 
     var inputImage by remember {
-        mutableStateOf("")
+        mutableStateOf(sp.image)
     }
 
 
-    var inputStatus by remember { mutableStateOf("San pham cu") } // default selection
+    val status = if(sp.status == true) "San pham moi" else "San pham cu"
+    var inputStatus by remember { mutableStateOf(status) } // default selection
 
     val statusOptions = listOf("San pham cu", "San pham moi")
 
@@ -70,15 +76,16 @@ fun AddSanPham(
         confirmButton = {
             Button(
                 onClick = {
-                    val msg = viewModel.addSanPham(
-                        name = inputName,
+                    val msg = viewModel.updateSanPham(
+                        uid = uid,
+                        name = inputName!!,
                         price = inputPrice,
-                        description = inputDescription,
+                        description = inputDescription!!,
                         status = inputStatus,
-                        image = inputImage
+                        image = inputImage!!
                     )
                     Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
-                    if (msg.equals("Them thanh cong")){
+                    if (msg.equals("Update thanh cong")){
                         onConfirm()
                     }
                 }
@@ -88,7 +95,7 @@ fun AddSanPham(
         },
         title = {
             Text(
-                text = "Add San pham",
+                text = "Update San pham",
                 fontWeight = FontWeight.Bold,
                 fontSize = 25.sp,
                 modifier = Modifier.padding(5.dp)
@@ -97,14 +104,14 @@ fun AddSanPham(
         text = {
             Column {
                 OutlinedTextField(
-                    value = inputName,
+                    value = inputName!! + "",
                     onValueChange = {inputName = it},
                     label = {
                         Text(text = "Name")
                     },
                 )
                 OutlinedTextField(
-                    value = inputPrice,
+                    value = inputPrice + "",
                     onValueChange = {inputPrice = it},
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     label = {
@@ -112,7 +119,7 @@ fun AddSanPham(
                     },
                 )
                 OutlinedTextField(
-                    value = inputDescription,
+                    value = inputDescription!! + "",
                     onValueChange = {inputDescription = it},
                     label = {
                         Text(text = "Description")
@@ -120,7 +127,7 @@ fun AddSanPham(
                 )
 
                 OutlinedTextField(
-                    value = inputImage,
+                    value = inputImage!! + "",
                     onValueChange = {inputImage = it},
                     label = {
                         Text(text = "Link Image")

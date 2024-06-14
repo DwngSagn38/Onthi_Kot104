@@ -22,5 +22,5 @@ class RepositorySanPham(val dbHelper: DBHelper) {
     fun getTang() = dbHelper.sanPhamDao().sapXepGiaTang()
     fun getGiam() = dbHelper.sanPhamDao().sapXepGiaGiam()
 
-    fun timKiem(key: String) = dbHelper.sanPhamDao().timKiemTheoTuKhoa(key)
+//    fun timKiem(key: String) = dbHelper.sanPhamDao().timKiemTheoTuKhoa(key)
 }

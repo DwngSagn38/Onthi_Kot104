@@ -21,8 +21,8 @@ interface SanPhamDao {
     @Query("SELECT * FROM SanPham ORDER BY price DESC")
     fun sapXepGiaGiam() : Flow<List<SanPhamModel>>
 
-    @Query("SELECT * FROM SanPham WHERE name LIKE '%' || :keyword || '%'")
-    fun timKiemTheoTuKhoa(keyword: String): Flow<List<SanPhamModel>>
+//    @Query("SELECT * FROM SanPham WHERE name LIKE '%' || :keyword || '%'")
+//    fun timKiemTheoTuKhoa(keyword: String): Flow<List<SanPhamModel>>
 
     @Delete
     suspend fun deleteSanPham(sanPhamModel: SanPhamModel)
