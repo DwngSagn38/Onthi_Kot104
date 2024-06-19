@@ -40,6 +40,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -65,20 +66,23 @@ import com.example.onthi.R
 import com.example.onthi.room.SanPhamModel
 import com.example.onthi.viewmodel.SanPhamViewModel
 import com.ibm.icu.text.Transliterator
+import kotlinx.coroutines.delay
+import java.text.NumberFormat
+import java.util.Locale
 
 @Composable
-fun Home(navController: NavController, viewModel: SanPhamViewModel){
+fun Home( viewModel: SanPhamViewModel){
     val context = LocalContext.current
-    val listSP by viewModel.sanPhams.collectAsState(initial = emptyList())
+    val listSP by viewModel.sanPhams.collectAsState()
     val listTang by viewModel.getTang.collectAsState(initial = emptyList())
     val listGiam by viewModel.getGiam.collectAsState(initial = emptyList())
 
-    var list by remember {
-        mutableStateOf(mutableListOf<SanPhamModel>())
-    }
-
     var listSearch by remember {
         mutableStateOf(emptyList<SanPhamModel>())
+    }
+
+    val keyString by remember {
+        mutableStateOf("")
     }
 
     var isSearching by remember {
@@ -132,12 +136,13 @@ fun Home(navController: NavController, viewModel: SanPhamViewModel){
             })
 
         when{
-            isCheckTang -> GetList(listTang,viewModel,context, it )
-            isCheckGiam -> GetList(listGiam,viewModel,context, it )
-            isSearching -> GetList(listSearch,viewModel,context, it )
-            else -> GetList(listSP,viewModel,context, it )
+            isCheckTang -> GetList(listTang,viewModel,context, it ){}
+            isCheckGiam -> GetList(listGiam,viewModel,context, it ){}
+            isSearching -> GetList(listSearch,viewModel,context, it ){
+                if (it) { isSearching = false }
+            }
+            else -> GetList(listSP,viewModel,context, it ){}
         }
-
 
         if (isShowDialogAdd){
             AddSanPham( viewModel = viewModel, context = context ) {
@@ -151,7 +156,7 @@ fun Home(navController: NavController, viewModel: SanPhamViewModel){
 fun Header(
     onCheckTang : () -> Unit,
     onCheckGiam: () -> Unit,
-    onSearch: (String) -> Unit
+    onSearch: (String) -> Unit,
 ){
     var inputKey by remember {
         mutableStateOf("")
@@ -173,29 +178,31 @@ fun Header(
         ){
             TextField(
                 value = inputKey,
-                onValueChange = { inputKey = it },
-                modifier = Modifier.width(200.dp),
+                onValueChange = {
+                    inputKey = it
+                    },
+                modifier = Modifier.width(250.dp),
                 label = {
                     Text(text = "Tim kiem theo name")
                 })
-            Button(onClick = {
-                onSearch(inputKey)
-            }) {
+
+            Button(onClick = { onSearch(inputKey) }) {
                 Text(text = "Search")
             }
-            Image(painter = painterResource(id = R.drawable.ic_up), contentDescription = "",
-                modifier = Modifier
-                    .size(30.dp)
-                    .clickable {
-                        onCheckTang()
-                    })
-
-            Image(painter = painterResource(id = R.drawable.ic_down), contentDescription = "",
-                modifier = Modifier
-                    .size(30.dp)
-                    .clickable {
-                        onCheckGiam()
-                    })
+//
+//            Image(painter = painterResource(id = R.drawable.ic_up), contentDescription = "",
+//                modifier = Modifier
+//                    .size(30.dp)
+//                    .clickable {
+//                        onCheckTang()
+//                    })
+//
+//            Image(painter = painterResource(id = R.drawable.ic_down), contentDescription = "",
+//                modifier = Modifier
+//                    .size(30.dp)
+//                    .clickable {
+//                        onCheckGiam()
+//                    })
         }
     }
 }
@@ -206,7 +213,8 @@ fun GetList(
     listSP: List<SanPhamModel>,
     viewModel: SanPhamViewModel,
     context: Context,
-    paddingValues: PaddingValues){
+    paddingValues: PaddingValues,
+    onConfirm: (Boolean) -> Unit){
 
     Column(
         modifier = Modifier
@@ -224,7 +232,7 @@ fun GetList(
             contentPadding = PaddingValues(10.dp)
         ) {
             items(listSP){sp ->
-                ItemSanPham(sp = sp, viewModel,context)
+                ItemSanPham(sp = sp, viewModel,context){onConfirm(it)}
             }
         }
     }
@@ -232,7 +240,8 @@ fun GetList(
 
 // Item san pham
 @Composable
-fun ItemSanPham(sp: SanPhamModel,viewModel: SanPhamViewModel, context: Context){
+fun ItemSanPham(sp: SanPhamModel,viewModel: SanPhamViewModel, context: Context,
+                onConfirm: (Boolean) -> Unit){
 
     var isShowDilogDelete by remember {
         mutableStateOf(false)
@@ -268,8 +277,7 @@ fun ItemSanPham(sp: SanPhamModel,viewModel: SanPhamViewModel, context: Context){
                 contentDescription = "",
                 contentScale = ContentScale.FillWidth,
                 modifier = Modifier
-                    .padding(10.dp)
-                    .size(90.dp)
+                    .size(70.dp)
                     .clip(RoundedCornerShape(10.dp)))
 
             Column(
@@ -283,7 +291,7 @@ fun ItemSanPham(sp: SanPhamModel,viewModel: SanPhamViewModel, context: Context){
 
                     )
                 Text(
-                    text = "Price: " + sp.price,
+                    text = "Price: " + formatCurrency(sp.price.toString()),
                     fontSize = 16.sp,
                     modifier = Modifier.padding(0.dp,5.dp),
 
@@ -303,6 +311,7 @@ fun ItemSanPham(sp: SanPhamModel,viewModel: SanPhamViewModel, context: Context){
             Column (
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.width(33.dp)
             ){
                 Icon(imageVector = Icons.Default.Edit, contentDescription = "",
                     modifier = Modifier
@@ -327,6 +336,7 @@ fun ItemSanPham(sp: SanPhamModel,viewModel: SanPhamViewModel, context: Context){
     if (isShowDilogDelete){
         DeleteDialog(viewModel, sp , context ) {
             isShowDilogDelete = false
+            onConfirm(true)
         }
     }
 
@@ -339,6 +349,7 @@ fun ItemSanPham(sp: SanPhamModel,viewModel: SanPhamViewModel, context: Context){
     if (isShowDilogUpdate){
         UpdateSanPham(viewModel, context, sp) {
             isShowDilogUpdate = false
+            onConfirm(true)
         }
     }
 }
@@ -347,4 +358,19 @@ fun ItemSanPham(sp: SanPhamModel,viewModel: SanPhamViewModel, context: Context){
 fun String.removeDiacritics(): String {
     val transliterator = Transliterator.getInstance("NFD; [:Nonspacing Mark:] Remove; NFC")
     return transliterator.transliterate(this)
+}
+
+// ham format price
+fun formatCurrency(value: String): String {
+    return if (value.isNotEmpty()) {
+        try {
+            val number = value.toDouble()
+            val format = NumberFormat.getCurrencyInstance(Locale("vi", "VN"))
+            format.format(number)
+        } catch (e: NumberFormatException) {
+            ""
+        }
+    } else {
+        ""
+    }
 }

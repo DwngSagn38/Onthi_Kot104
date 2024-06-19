@@ -66,7 +66,7 @@ fun DetailSanPham(
                         .clip(RoundedCornerShape(12.dp)))
                 Text(text = "Id : ${sp.uid}", fontSize = 22.sp, modifier = Modifier.padding(0.dp,5.dp))
                 Text(text = "Name : ${sp.name}", fontSize = 18.sp, modifier = Modifier.padding(0.dp,5.dp))
-                Text(text = "Price : ${sp.price}", fontSize = 18.sp, modifier = Modifier.padding(0.dp,5.dp))
+                Text(text = "Price : ${formatCurrency(sp.price.toString())}", fontSize = 18.sp, modifier = Modifier.padding(0.dp,5.dp))
                 Text(text = "Description : ${sp.description}", fontSize = 18.sp, modifier = Modifier.padding(0.dp,5.dp))
                 Text(text = "Status : "+ if(sp.status!!) "San pham moi" else "San pham cu", fontSize = 18.sp, modifier = Modifier.padding(0.dp,5.dp))
             }

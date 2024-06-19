@@ -21,6 +21,6 @@ fun NavApp(){
 
     NavHost(navController = navController, startDestination = Screen.Welcome.route) {
         composable(Screen.Welcome.route){ Welcome(navController)}
-        composable(Screen.Home.route){ Home(navController,viewModel) }
+        composable(Screen.Home.route){ Home(viewModel) }
     }
 }

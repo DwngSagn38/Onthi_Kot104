@@ -6,11 +6,33 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.onthi.repository.RepositorySanPham
 import com.example.onthi.room.SanPhamModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 class SanPhamViewModel(val repository: RepositorySanPham) : ViewModel() {
     private val _timKiemSanPhams = MutableLiveData<List<SanPhamModel>>()
     val timKiemSanPhams: LiveData<List<SanPhamModel>> get() = _timKiemSanPhams
+
+    private val _sanPhams = MutableStateFlow<List<SanPhamModel>>(emptyList())
+    val sanPhams: StateFlow<List<SanPhamModel>> get() = _sanPhams
+
+    init {
+        fetchSanPhams()
+    }
+
+    private fun fetchSanPhams() {
+        viewModelScope.launch {
+            repository.getAll().collect { sanPhamList ->
+                _sanPhams.value = sanPhamList
+            }
+        }
+    }
+
+
 
     fun addSanPham( name : String, price : String, description : String, status : String, image : String) : String {
         if (name.isEmpty() || price.isEmpty() || description.isEmpty() || status.isEmpty() || image.isEmpty()){
@@ -18,6 +40,9 @@ class SanPhamViewModel(val repository: RepositorySanPham) : ViewModel() {
         }
         if (!isDouble(price)){
             return "Gia san pham chua dung"
+        }
+        if (!isDate(description)){
+            return "Ngay chua dung (dd-MM-yyyy)"
         }
         val statusBoolean = if(status.equals("San pham moi")) true else false
         val sanPham = SanPhamModel(0,name,price.toDouble(),description,statusBoolean, image)
@@ -27,7 +52,7 @@ class SanPhamViewModel(val repository: RepositorySanPham) : ViewModel() {
         return "Them thanh cong"
     }
 
-    val sanPhams = repository.getAll()
+
 
     val getTang = repository.getTang()
     val getGiam = repository.getGiam()
@@ -45,6 +70,9 @@ class SanPhamViewModel(val repository: RepositorySanPham) : ViewModel() {
         }
         if (!isDouble(price)){
             return "Gia san pham chua dung"
+        }
+        if (!isDate(description)){
+            return "Ngay chua dung (dd-MM-yyyy)"
         }
         val statusBoolean = if(status.equals("San pham moi")) true else false
         val sanPham = SanPhamModel(uid,name,price.toDouble(),description,statusBoolean, image)
@@ -68,6 +96,18 @@ fun isDouble(value: String): Boolean {
         value.toDouble()
         true
     } catch (e: NumberFormatException) {
+        false
+    }
+}
+
+fun isDate(value: String): Boolean{
+    val dateFormat = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
+    dateFormat.isLenient = false // This ensures strict date parsing
+
+    return try {
+        dateFormat.parse(value)
+        true
+    } catch (e: Exception) {
         false
     }
 }
